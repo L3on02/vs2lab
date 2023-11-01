@@ -18,7 +18,11 @@ class Server:
     _logger = logging.getLogger("vs2lab.lab1.clientserver.Server")
     _serving = True
 
-    _database = {'annette':1234,'jack': 4098, 'peter': 5678 , 'sape': 4139}
+    _database = {'annette': "1234",
+                 'jack': "4098",
+                 'peter': "5678",
+                 'sape': "4139"
+                 }
 
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,20 +62,17 @@ class Server:
                     message = data.decode('ascii')
                     if message == "getAll" :
                         # task recieved to print out all records of database
+                        message_out = ""
                         for k, v in self._database.items():
-                            time.sleep(0.1)
-                            message_out = "Name: " + str(k) + " Nummer:" + str(v)
-                            connection.send(message_out.encode('ascii'))
-                        time.sleep(0.1)
-                        connection.send("end".encode("ascii"))
+                            message_out += str(k) + ": " + str(v) + "\n"
+                        connection.send(message_out.encode("ascii"))
                     else :
                         if message not in self._database:
-
                             # name not in the database
                             connection.send("end".encode("ascii"))
                         else:
                             # name in the database, ready to send
-                            message_out = "Name: " + str(message) + " Nummer: " + str(self._database[message])
+                            message_out = str(message) + ": " + str(self._database[message])
                             connection.send(message_out.encode("ascii"))
                 connection.close()
             except socket.timeout:
@@ -103,27 +104,23 @@ class Client:
         """ Get a phone book record"""
         self.sock.send(name.encode('ascii'))
         data = self.sock.recv(1024)
-        message = data.decode('ascii')
-        if (message == "end"):
+        result = data.decode('ascii')
+        if (result == "end"):
             print("Error404: Name not found")
         else:
-            print(message)
+            print(result)
         self.sock.close()
-        print("Client down.")
-    
+        return result
+       
     def get_all(self):
         """ Get all phone book records"""
         name = "getAll"
         self.sock.send(name.encode('ascii'))
-        while True:
-            data = self.sock.recv(1024)
-            message = data.decode('ascii')
-            if (message == "end"):
-                break
-            else:
-                print(message)
+        data = self.sock.recv(1024)
+        result = data.decode('ascii')
+        print(result)
         self.sock.close()
-        print("Client down.")
+        return result
 
 
     def close(self):
